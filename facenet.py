@@ -10,11 +10,11 @@ from numpy import genfromtxt
 import tensorflow as tf
 from fr_utils import *
 from inception_blocks_v2 import *
-import win32com.client as wincl
+# import win32com.client as wincl
 
 PADDING = 50
 ready_to_detect_identity = True
-windows10_voice_interface = wincl.Dispatch("SAPI.SpVoice")
+# windows10_voice_interface = wincl.Dispatch("SAPI.SpVoice")
 
 FRmodel = faceRecoModel(input_shape=(3, 96, 96))
 
@@ -49,6 +49,7 @@ FRmodel.compile(optimizer = 'adam', loss = triplet_loss, metrics = ['accuracy'])
 load_weights_from_FaceNet(FRmodel)
 
 def prepare_database():
+    print('OK starting to prepare')
     database = {}
 
     # load all the images of individuals to recognize into the database
@@ -56,6 +57,7 @@ def prepare_database():
         identity = os.path.splitext(os.path.basename(file))[0]
         database[identity] = img_path_to_encoding(file, FRmodel)
 
+    print('database loaded')
     return database
 
 def webcam_face_recognizer(database):
@@ -68,8 +70,12 @@ def webcam_face_recognizer(database):
     """
     global ready_to_detect_identity
 
-    cv2.namedWindow("preview")
-    vc = cv2.VideoCapture(0)
+    # cv2.namedWindow("preview")
+    # vc = cv2.VideoCapture(0)
+    # vc = cv2.VideoCapture('rtsp://root:MTM1mlrm@192.168.3.10/axis-media/media.amp')
+    vc = cv2.VideoCapture('rtsp://root:MTM1mlrm@192.168.3.10/axis-media/media.amp?resolution=640x480')
+    
+    
 
     face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
     
@@ -82,11 +88,11 @@ def webcam_face_recognizer(database):
             img = process_frame(img, frame, face_cascade)   
         
         key = cv2.waitKey(100)
-        cv2.imshow("preview", img)
+        # cv2.imshow("preview", img)
 
         if key == 27: # exit on ESC
             break
-    cv2.destroyWindow("preview")
+    # cv2.destroyWindow("preview")
 
 def process_frame(img, frame, face_cascade):
     """
@@ -185,12 +191,13 @@ def welcome_users(identities):
         welcome_message += 'and %s, ' % identities[-1]
         welcome_message += 'have a nice day!'
 
-    windows10_voice_interface.Speak(welcome_message)
+    # windows10_voice_interface.Speak(welcome_message)
 
     # Allow the program to start detecting identities again
     ready_to_detect_identity = True
 
 if __name__ == "__main__":
+    print('Start...')
     database = prepare_database()
     webcam_face_recognizer(database)
 
